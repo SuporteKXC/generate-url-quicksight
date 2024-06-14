@@ -1,0 +1,46 @@
+service: quicksight
+
+provider:
+  name: aws
+  timeout: 30
+  deploymentMethod: direct
+  region: us-east-1
+  runtime: nodejs18.x
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - quicksight:GenerateEmbedUrlForRegisteredUser
+        - dynamodb:GetItem
+      Resource:
+        - "*"
+  environment:
+    USER_POOL_ID: xxxxxxx
+    CLIENT_ID: xxxxxxx
+    REGION: us-east-1
+    TABLE_NAME: user-dashboard
+    AWS_ACCOUNT_ID: 0000000000000
+    DEFAULT_QUICKSIGHT_USER: arn:aws:quicksight:us-east-1:0000000000000:user/default/<usuario aqui>
+
+
+functions:
+  generate-embed-url:
+    handler: generate-embed-url.handler
+    events:
+        - http:
+            path: generate-embed-url
+            method: get
+            cors: true
+
+resources:
+  Resources:
+    UserDashboard:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: user-dashboard
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId 
+            AttributeType: 'S'
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
